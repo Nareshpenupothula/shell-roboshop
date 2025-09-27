@@ -2,7 +2,7 @@
 
 AMI_ID="ami-09c813fb71547fc4f"
 SG_ID="sg-0a211cbb2d25869bb"
-
+DOMAIN_NAME="ndaws86s.fun"
 
 for instance in $@ 
 do
@@ -10,10 +10,30 @@ do
 
     if [ $instance != frontend ]; then
         IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PrivateIpAddress" --output text)
+        RECORD_NAME="$instance.$DOMAIN_NAME"
     else
         IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
     fi
 
     echo "$instance: $IP"
+
+    aws route53 change-resource-record-sets \
+    --hosted-zone-id Z02356993HYLCXH1SICVV \
+    --change-batch '
+    {
+        "Comment": "updating record set"
+        ,"Changes": [{
+        "Action"              : "UPSERT"
+        ,"ResourceRecordSet"  : {
+            "Name"              : "'$RECORD_NAME'"
+            ,"Type"             : "A"
+            ,"TTL"              : 1
+            ,"ResourceRecords"  : [{
+            "Value"         : "'" $IP "'"
+            }]
+        }
+        }]
+    }
+    '
 
 done
