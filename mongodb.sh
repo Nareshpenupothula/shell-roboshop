@@ -4,7 +4,7 @@ g="\e[32m"
 y="\e[33m"
 n="\e[0m"
 
-log_folder="/var/log/roboshop"
+log_folder="/var/log/robo_shop"
 script_name=$(echo $0 | cut -d "." -f1)
 log_file="$log_folder/$script_name.log"
 
