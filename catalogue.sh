@@ -21,7 +21,7 @@ if [ $userid -ne 0 ]; then
 fi
 
 
-VALIDATE (){
+VALIDATE (){ 
     if [ $1 -ne 0 ]; then
         echo -e "Error:: $2 is $r failure $n" | tee -a $log_file
         exit 1
@@ -53,8 +53,12 @@ VALIDATE $? "changing directory"
 
 unzip /tmp/catalogue.zip &>>$log_file
 VALIDATE $? "unzip catalogue"
+
 npm install &>>$log_file
 VALIDATE $? "Installing dependencess"
+
+cp catalogue.service /etc/systemd/system/catalogue.service
+VALIDATE $? "copying systemctlservice"
 
 systemctl daemon-reload
 
