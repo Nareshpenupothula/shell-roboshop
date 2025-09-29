@@ -3,8 +3,9 @@ g="\e[32m"
 y="\e[33m"
 n="\e[0m"
 
-log_folder="/var/log/robo_shop"
+log_folder="/var/log/shell-roboshop"
 script_name=$(echo $0 | cut -d "." -f1)
+script_dir=$pwd
 log_file="$log_folder/$script_name.log"
 
 mkdir -p $log_folder
@@ -39,10 +40,13 @@ VALIDATE $? "enabling Nodejs"
 dnf install nodejs -y &>>$log_file
 VALIDATE $? "Installing Nodejs "
 
+id roboshop
+if [ $? -ne 0 ]; then
 useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$log_file
 VALIDATE $? "creating system user"
-
-mkdir /app 
+else
+echo -e " user already exists.... $y skipping $n "
+mkdir -p /app 
 VALIDATE $? "Creating App directory"
 
 curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip &>>$log_file
@@ -57,7 +61,7 @@ VALIDATE $? "unzip catalogue"
 npm install &>>$log_file
 VALIDATE $? "Installing dependencess"
 
-cp catalogue.service /etc/systemd/system/catalogue.service
+cp $script_dir/catalogue.service /etc/systemd/system/catalogue.service
 VALIDATE $? "copying systemctlservice"
 
 systemctl daemon-reload
@@ -68,7 +72,7 @@ VALIDATE $? "enabling catalogue"
 systemctl start catalogue  &>>$log_file
 VALIDATE $? "Starting catalogue"
 
-cp mongo.repo /etc/yum.repos.d/mongo.repo
+cp $script_dir/mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "copying to mongo repo"
 
 dnf install mongodb-mongosh -y &>>$log_file
